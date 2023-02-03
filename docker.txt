@@ -1,0 +1,11 @@
+cd src
+export PATH=/mnt/SOFT/sdb1/myTools/myOS/cross/aarch64-linux-musl-cross/bin/:$PATH
+make CROSS_TOOL=aarch64-linux-musl-
+
+
+docker build --platform linux/arm64 -t memeat:1.0 .
+docker save -o memeat_arm64.tar memeat:1.0
+
+# test
+
+docker run -it memeat:1.0

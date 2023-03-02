@@ -28,8 +28,11 @@ memtester 127.0.0.1 100
 ```
 # Docker
 ```
+# for arm64 platform, other platform need modify "Dockerfile" COPY command
 docker build --platform linux/arm64 -t memeat:1.0 .
 docker save -o memeat_arm64.tar memeat:1.0
+# test
+docker run -it memeat:1.0
 ```
 
 # Help

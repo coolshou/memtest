@@ -3,6 +3,7 @@ CROSS_TOOLS?=${CROSS_TOOL}
 CC=${CROSS_TOOLS}gcc
 C_FLAGS=-Wall -Werror -ansi -pedantic -g -std=c++0x
 LDFLAG=-lpthread -lm
+LDFLAG+=-lwsock32
 
 all: clean server client
 

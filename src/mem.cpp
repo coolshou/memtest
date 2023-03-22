@@ -42,7 +42,7 @@ int eat_kilobyte()
 	}
 }
 
-int memeat(int memusage, int iwait)
+int memeat(int memusage, int iwait, int delay)
 {
 	eaten_memory = 0;
 	memory = NULL;
@@ -70,6 +70,11 @@ int memeat(int memusage, int iwait)
 			printf("Eaten %ld / %d MB of ram\n", eaten_memory / (size_t)1024, memusage);
 #endif
 			megabyte = 0;
+			if (delay > 0)
+			{
+				printf("sleep %d sec\n", delay);
+				sleep(delay);
+			}
 		}
 	}
 	printf("Successfully eaten requested memory!\n");

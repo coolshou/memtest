@@ -2,6 +2,8 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
+#include <cstring>
 #if defined _WIN32
 #include "win.h"
 #else
@@ -13,15 +15,26 @@
 #endif
 #include <sys/types.h>
 
-#define PORT 5555
-#define MAXMSG 512
+#include "myfun.h"
 
-extern int memeat(int memusage, int iwait);
+extern int memeat(int memusage, int iwait, int delay);
+
+void split(char **arr, char *str, const char *del)
+{
+  char *s = strtok(str, del);
+
+  while (s != NULL)
+  {
+    *arr++ = s;
+    s = strtok(NULL, del);
+  }
+}
 
 int read_from_client(int filedes)
 {
   char buffer[MAXMSG];
   int nbytes;
+  char *arr[3];
 
   nbytes = read(filedes, buffer, MAXMSG);
   if (nbytes < 0)
@@ -37,7 +50,19 @@ int read_from_client(int filedes)
   {
     /* Data read. */
     fprintf(stderr, "Server: got message: '%s'\n", buffer);
-    memeat(atoi(buffer), 30);
+    if (std::strchr(buffer, ';') != nullptr)
+    {
+      split(arr, buffer, ";");
+      memeat(atoi(arr[0]), atoi(arr[2]), atoi(arr[1]));
+    }
+    else
+    {
+      memeat(atoi(buffer), 30, 0);
+    }
+    // pch = strchr(buffer, ';');
+    // memuse;delay
+    // memeat(atoi(buffer), 30, 1);
+    // memeat(atoi(buffer), 30);
     return 0;
   }
 }

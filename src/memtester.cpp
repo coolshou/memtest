@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <string.h>
 #if defined _WIN32
 #include "win.h"
 #else
@@ -11,27 +12,42 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #endif
-#include <string.h>
-#include "version.h"
 
-// #define PORT            5555
-// #define MESSAGE         "Yow!!! Are we having fun yet?!?"
+#include "version.h"
+#include "myfun.h"
 
 #define ERROR_ARG -1
 
 extern void init_sockaddr(struct sockaddr_in *name,
                           const char *hostname,
                           uint16_t port);
-void write_to_server(int filedes, char *memusage)
+#if defined _WIN32
+extern void ClearWinSock();
+extern void myError(int errno);
+#endif
+
+void write_to_server(int filedes, char *memusage, char *delay, char *wait)
 {
   int nbytes;
-  /*nbytes = write(filedes, MESSAGE, strlen (MESSAGE) + 1);*/
-  nbytes = write(filedes, memusage, strlen(memusage) + 1);
+  // int stringLen = strlen(memusage);
+  int len = strlen(memusage) + strlen(";") + strlen(delay) + strlen(";") + strlen(wait) + 1;
+  char *concated = new char[len];
+  memset(concated, '\0', len);
+  printf("memusage: %s , delay: %s\n", memusage, delay);
+  strcat(concated, memusage);
+  strcat(concated, ";");
+  strcat(concated, delay);
+  strcat(concated, ";");
+  strcat(concated, wait);
+
+  nbytes = write(filedes, concated, len);
+  // nbytes = write(filedes, memusage, len);
   if (nbytes < 0)
   {
     perror("write");
     exit(EXIT_FAILURE);
   }
+  delete[] concated;
 }
 
 int converttoint(const char *buff)
@@ -76,51 +92,130 @@ void help(char *argv[])
 {
   printf("v%s\n", VERSION);
   printf("Usage:\n");
-  printf(" %s <ip address> [port] <num of MB>\n", argv[0]);
-  printf("\t<ip address>: target ipv4 address\n");
-  printf("\t[port]: target port number, default 5555 (option)\n");
-  printf("\t<num of MB>: How many memory will consume in MB\n");
+  printf(" %s -c <ip address> -n <num of MB> -d [delay] -p [port]\n", argv[0]);
+  printf("\t-c <ip address>: target ipv4 address\n");
+  printf("\t-n <num of MB>: How many memory will consume in MB\n");
+  printf("\t-p [port]: target port number, default 5555 (option)\n");
+  printf("\t-d [delay]:  delay time on consume memory, default 0 (sec)\n");
+  printf("\t-w [wait]:  wait time to free the consume memory, default 30 (sec)\n");
 }
 
 int main(int argc, char *argv[])
 {
+#if defined _WIN32
+  SOCKET sock;
+#else
   int sock;
+#endif
   struct sockaddr_in servername;
   char *ipaddr;
   char *memusage;
-  uint16_t port;
-
-  if (argc < 2)
+  int16_t iwait = 30;
+  int16_t port = 5555;
+  int16_t delay = 0;
+  int rc = 0;
+  if (argc < 3)
   {
     help(argv);
     exit(ERROR_ARG);
   }
-  ipaddr = argv[1];
-  if (argc <= 3)
+  int opt;
+  while ((opt = getopt(argc, argv, "hp:d:n:c:w:")) != -1)
   {
-    port = 5555;
-    memusage = argv[2];
+    switch (opt)
+    {
+    case 'h':
+      help(argv);
+      return 0;
+    case 'w':
+      iwait = converttoint(optarg);
+      break;
+    case 'p':
+      port = converttoint(optarg);
+      break;
+    case 'd':
+      printf("set delay: %s", optarg);
+      delay = converttoint(optarg);
+      break;
+    case 'n':
+      memusage = optarg;
+      rc = converttoint(memusage);
+      if (rc < 0)
+      {
+        exit(ERROR_ARG);
+      }
+      break;
+    case 'c':
+      ipaddr = optarg;
+      break;
+    default:
+      help(argv);
+      exit(ERROR_ARG);
+    }
   }
-  else
-  {
-    port = converttoint(argv[2]);
-    memusage = argv[3];
-  }
-  printf("ipaddr:%s, port: %d, memusage:%s\n", ipaddr, port, memusage);
 
-  if (converttoint(memusage) < 0)
+  printf("ipaddr:%s, memusage:%s MB\n", ipaddr, memusage);
+  if (port > 0)
   {
-    exit(ERROR_ARG);
+    printf(", port: %d", port);
   }
-
+  if (delay >= 0)
+  {
+    printf(", delay: %d", delay);
+  }
+  printf("\n");
+#if defined _WIN32
+  WSADATA wsaData;
+  int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+  if (iResult != 0)
+  {
+    printf("error at WSASturtup\n");
+    return 0;
+  }
   /* Create the socket. */
-  sock = socket(PF_INET, SOCK_STREAM, 0);
+  // int Csocket;
+  sock = socket(PF_INET, SOCK_STREAM, IPPROTO_IP);
+  if (sock < 0)
+  {
+    fprintf(stderr, "socket creation failed.\n");
+    // closesocket(Csocket);
+    // ClearWinSock();
+    exit(EXIT_FAILURE);
+  }
+  /* Connect to the server. */
+  // Server address construction
+  // struct sockaddr_in sad;
+  memset(&servername, 0, sizeof(servername));
+  servername.sin_family = AF_INET;
+  servername.sin_addr.s_addr = inet_addr(ipaddr); // server IP
+  servername.sin_port = port;                     // htons(5193);              // Server port
+  // Connection to the server
+  if (connect(sock, (struct sockaddr *)&servername, sizeof(servername)) < 0)
+  {
+    int err = WSAGetLastError();
+    fprintf(stderr, "Failed to connect.(%d)\n", err);
+    myError(err);
+    // closesocket(sock);
+    // ClearWinSock();
+    exit(EXIT_FAILURE);
+  }
+  int stringLen = strlen(memusage);
+  if (send(sock, memusage, stringLen, 0) != stringLen)
+  {
+    fprintf(stderr, "send() sent a different number of bytes than expected");
+    // closesocket(Csocket);
+    // ClearWinSock();
+    exit(EXIT_FAILURE);
+  }
+
+#else
+  /* Create the socket. */
+  sock = socket(PF_INET, SOCK_STREAM, IPPROTO_IP);
   if (sock < 0)
   {
     perror("socket (client)");
     exit(EXIT_FAILURE);
   }
-
   /* Connect to the server. */
   init_sockaddr(&servername, ipaddr, port);
   if (0 > connect(sock,
@@ -130,9 +225,19 @@ int main(int argc, char *argv[])
     perror("connect (client)");
     exit(EXIT_FAILURE);
   }
-
   /* Send data to the server. */
-  write_to_server(sock, memusage);
+  printf("Send data to the server\n");
+
+  char cdelay[2];
+  sprintf(cdelay, "%d", delay);
+  printf("cdelay: %s\n", cdelay);
+  char cwait[2];
+  sprintf(cwait, "%d", iwait);
+  write_to_server(sock, memusage, cdelay, cwait);
+#endif
   close(sock);
+#if defined _WIN32
+  ClearWinSock();
+#endif
   exit(EXIT_SUCCESS);
 }

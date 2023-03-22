@@ -9,6 +9,7 @@
 
 int make_socket(uint16_t port)
 {
+  /*
 #if defined _WIN32
   struct addrinfo *result = NULL, *ptr = NULL, hints;
 
@@ -19,7 +20,7 @@ int make_socket(uint16_t port)
   hints.ai_flags = AI_PASSIVE;
 
   // Resolve the local address and port to be used by the server
-  iResult = getaddrinfo(NULL, port, &hints, &result);
+  int iResult = getaddrinfo(NULL, port, &hints, &result);
   if (iResult != 0)
   {
     printf("getaddrinfo failed: %d\n", iResult);
@@ -46,6 +47,7 @@ int make_socket(uint16_t port)
     return 1;
   }
 #else
+*/
   int sock;
   struct sockaddr_in name;
 
@@ -68,5 +70,5 @@ int make_socket(uint16_t port)
   }
 
   return sock;
-#endif
+  // #endif
 }

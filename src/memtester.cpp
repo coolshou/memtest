@@ -23,23 +23,32 @@ extern void init_sockaddr(struct sockaddr_in *name,
                           uint16_t port);
 #if defined _WIN32
 extern void ClearWinSock();
-extern void myError(int errno);
+extern void myError(int myErrno);
 #endif
 
 void write_to_server(int filedes, char *memusage, char *delay, char *wait)
 {
-  int nbytes;
   // int stringLen = strlen(memusage);
   int len = strlen(memusage) + strlen(";") + strlen(delay) + strlen(";") + strlen(wait) + 1;
   char *concated = new char[len];
   memset(concated, '\0', len);
-  printf("memusage: %s , delay: %s\n", memusage, delay);
+  printf("memusage: %s , delay: %s, wait: %s\n", memusage, delay, wait);
   strcat(concated, memusage);
   strcat(concated, ";");
   strcat(concated, delay);
   strcat(concated, ";");
   strcat(concated, wait);
 
+#if defined _WIN32
+  if (send(filedes, concated, len, 0) != len)
+  {
+    fprintf(stderr, "send() sent a different number of bytes than expected");
+    // closesocket(Csocket);
+    // ClearWinSock();
+    exit(EXIT_FAILURE);
+  }
+#else
+  int nbytes;
   nbytes = write(filedes, concated, len);
   // nbytes = write(filedes, memusage, len);
   if (nbytes < 0)
@@ -47,6 +56,7 @@ void write_to_server(int filedes, char *memusage, char *delay, char *wait)
     perror("write");
     exit(EXIT_FAILURE);
   }
+#endif
   delete[] concated;
 }
 
@@ -110,9 +120,9 @@ int main(int argc, char *argv[])
   struct sockaddr_in servername;
   char *ipaddr;
   char *memusage;
-  int16_t iwait = 30;
-  int16_t port = 5555;
-  int16_t delay = 0;
+  uint16_t iwait = 30;
+  uint16_t port = 5555;
+  uint16_t delay = 0;
   int rc = 0;
   if (argc < 3)
   {
@@ -134,7 +144,7 @@ int main(int argc, char *argv[])
       port = converttoint(optarg);
       break;
     case 'd':
-      printf("set delay: %s", optarg);
+      // printf("set delay: %s", optarg);
       delay = converttoint(optarg);
       break;
     case 'n':
@@ -154,7 +164,7 @@ int main(int argc, char *argv[])
     }
   }
 
-  printf("ipaddr:%s, memusage:%s MB\n", ipaddr, memusage);
+  printf("ipaddr:%s, memusage:%s MB", ipaddr, memusage);
   if (port > 0)
   {
     printf(", port: %d", port);
@@ -194,19 +204,20 @@ int main(int argc, char *argv[])
   {
     int err = WSAGetLastError();
     fprintf(stderr, "Failed to connect.(%d)\n", err);
-    myError(err);
+    // myError(err);
     // closesocket(sock);
     // ClearWinSock();
     exit(EXIT_FAILURE);
   }
-  int stringLen = strlen(memusage);
-  if (send(sock, memusage, stringLen, 0) != stringLen)
-  {
-    fprintf(stderr, "send() sent a different number of bytes than expected");
-    // closesocket(Csocket);
-    // ClearWinSock();
-    exit(EXIT_FAILURE);
-  }
+
+  // int stringLen = strlen(memusage);
+  // if (send(sock, memusage, stringLen, 0) != stringLen)
+  // {
+  //   fprintf(stderr, "send() sent a different number of bytes than expected");
+  //   // closesocket(Csocket);
+  //   // ClearWinSock();
+  //   exit(EXIT_FAILURE);
+  // }
 
 #else
   /* Create the socket. */
@@ -225,19 +236,20 @@ int main(int argc, char *argv[])
     perror("connect (client)");
     exit(EXIT_FAILURE);
   }
+#endif
   /* Send data to the server. */
   printf("Send data to the server\n");
 
   char cdelay[2];
   sprintf(cdelay, "%d", delay);
-  printf("cdelay: %s\n", cdelay);
+  // printf("cdelay: %s\n", cdelay);
   char cwait[2];
   sprintf(cwait, "%d", iwait);
   write_to_server(sock, memusage, cdelay, cwait);
-#endif
+
   close(sock);
 #if defined _WIN32
-  ClearWinSock();
+  // ClearWinSock();
 #endif
   exit(EXIT_SUCCESS);
 }

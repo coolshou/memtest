@@ -1,0 +1,7 @@
+FROM arm64v8/alpine:latest
+
+COPY arm64-musl/memtestd /usr/local/bin
+
+ENTRYPOINT ["/usr/local/bin/memtestd"]
+
+EXPOSE 5555

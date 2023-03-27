@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+
 #if defined _WIN32
 #include "win.h"
 #else
@@ -7,11 +8,15 @@
 #include <netinet/in.h>
 #endif
 
+#include <string>
+
 int make_socket(uint16_t port)
 {
-  /*
+
 #if defined _WIN32
-  struct addrinfo *result = NULL, *ptr = NULL, hints;
+  struct addrinfo *result = NULL;
+  // struct addrinfo *ptr = NULL;
+  struct addrinfo hints;
 
   ZeroMemory(&hints, sizeof(hints));
   hints.ai_family = AF_INET;
@@ -20,22 +25,25 @@ int make_socket(uint16_t port)
   hints.ai_flags = AI_PASSIVE;
 
   // Resolve the local address and port to be used by the server
-  int iResult = getaddrinfo(NULL, port, &hints, &result);
+  std::string sport = std::to_string(port);
+  const char *char_port = sport.c_str();
+
+  int iResult = getaddrinfo(NULL, char_port, &hints, &result);
   if (iResult != 0)
   {
     printf("getaddrinfo failed: %d\n", iResult);
     WSACleanup();
-    return 1;
+    exit(EXIT_FAILURE);
   }
-  SOCKET sock = INVALID_SOCKET;
-  sock = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+  SOCKET ListenSocket = INVALID_SOCKET;
+  ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
 
   if (ListenSocket == INVALID_SOCKET)
   {
-    printf("Error at socket(): %ld\n", WSAGetLastError());
+    printf("Error at socket(): %d\n", WSAGetLastError());
     freeaddrinfo(result);
     WSACleanup();
-    return 1;
+    exit(EXIT_FAILURE);
   }
   iResult = bind(ListenSocket, result->ai_addr, (int)result->ai_addrlen);
   if (iResult == SOCKET_ERROR)
@@ -44,15 +52,16 @@ int make_socket(uint16_t port)
     freeaddrinfo(result);
     closesocket(ListenSocket);
     WSACleanup();
-    return 1;
+    exit(EXIT_FAILURE);
   }
+  return ListenSocket;
 #else
-*/
+
   int sock;
   struct sockaddr_in name;
 
   /* Create the socket. */
-  sock = socket(PF_INET, SOCK_STREAM, 0);
+  sock = socket(PF_INET, SOCK_STREAM, IPPROTO_IP);
   if (sock < 0)
   {
     perror("socket");
@@ -70,5 +79,5 @@ int make_socket(uint16_t port)
   }
 
   return sock;
-  // #endif
+#endif
 }

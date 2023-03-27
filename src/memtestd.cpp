@@ -18,6 +18,7 @@
 #include "myfun.h"
 
 extern int memeat(int memusage, int iwait, int delay);
+extern int make_socket(uint16_t port);
 
 void split(char **arr, char *str, const char *del)
 {
@@ -69,19 +70,30 @@ int read_from_client(int filedes)
 
 int main(void)
 {
-  extern int make_socket(uint16_t port);
+#if defined _WIN32
+  SOCKET sock;
+#else
   int sock;
+#endif
   fd_set active_fd_set, read_fd_set;
   int i;
   struct sockaddr_in clientname;
   /*size_t size;*/
   socklen_t size;
-
+#if defined _WIN32
+  WSADATA wsaData;
+  int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+  if (iResult != 0)
+  {
+    printf("error at WSASturtup\n");
+    exit(EXIT_FAILURE);
+  }
+#endif
   /* Create the socket and set it up to accept connections. */
   sock = make_socket(PORT);
   if (listen(sock, 1) < 0)
   {
-    perror("listen");
+    perror("listen Fail");
     exit(EXIT_FAILURE);
   }
 

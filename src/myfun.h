@@ -4,7 +4,9 @@
 #define PORT 5555
 #define MAXMSG 512
 
-extern void ClearWinSock();
-extern void myError(int errno);
+#if defined WIN32
+void ClearWinSock();
+void myError(int myErrno);
+#endif
 
 #endif //__MYFUN_H

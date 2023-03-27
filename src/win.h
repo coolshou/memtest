@@ -2,6 +2,9 @@
 #define __WIN_H
 
 #if defined _WIN32
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x601
+#endif
 #include <winsock2.h>
 #include <ws2tcpip.h>
 // #include <er

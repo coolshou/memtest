@@ -1,10 +1,12 @@
 
 #if defined WIN32
+#include "myfun.h"
+
 void ClearWinSock()
 {
     WSACleanup();
 }
-void myError(int errno)
+void myError(int myErrno)
 {
     // int  err;
     char msgbuf[256]; // for a message up to 255 bytes.
@@ -15,7 +17,7 @@ void myError(int errno)
 
     FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, // flags
                   NULL,                                                       // lpsource
-                  errno,                                                      // message id
+                  myErrno,                                                    // message id
                   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),                  // languageid
                   msgbuf,                                                     // output buffer
                   sizeof(msgbuf),                                             // size of msgbuf, bytes

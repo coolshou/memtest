@@ -1,6 +1,8 @@
 FROM arm64v8/alpine:latest
 
-COPY arm64-musl/memtestd /usr/local/bin
+COPY arm64-musl/memtestd /usr/local/bin/
+COPY arm64-musl/libstdc++.so.6 arm64-musl/libgcc_s.so.1 /usr/lib/
+#COPY arm64-musl/libstdc++.so.6.0.29 /usr/lib/
 
 ENTRYPOINT ["/usr/local/bin/memtestd"]
 

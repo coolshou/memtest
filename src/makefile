@@ -1,7 +1,7 @@
 CROSS_TOOLS?=${CROSS_TOOL}
 
 CC=${CROSS_TOOLS}gcc
-C_FLAGS=-Wall -Werror -ansi -pedantic -g -std=c++0x 
+C_FLAGS=-Wall -Werror -ansi -pedantic -g -std=c++0x
 LIBS=-lstdc++ -lpthread -lm
 
 ifneq (, $(findstring mingw, $(CC)))

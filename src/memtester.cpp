@@ -123,8 +123,8 @@ int main(int argc, char *argv[])
   uint16_t iwait = 30;
   uint16_t port = 5555;
   uint16_t delay = 0;
-  int rc = 0;
-  if (argc < 3)
+  int imemusage = -1;
+  if (argc < 5)
   {
     help(argv);
     exit(ERROR_ARG);
@@ -149,11 +149,7 @@ int main(int argc, char *argv[])
       break;
     case 'n':
       memusage = optarg;
-      rc = converttoint(memusage);
-      if (rc < 0)
-      {
-        exit(ERROR_ARG);
-      }
+      imemusage = converttoint(memusage);
       break;
     case 'c':
       ipaddr = optarg;
@@ -163,8 +159,13 @@ int main(int argc, char *argv[])
       exit(ERROR_ARG);
     }
   }
+  if (imemusage < 0)
+  {
+    help(argv);
+    exit(ERROR_ARG);
+  }
 
-  printf("ipaddr:%s, memusage:%s MB", ipaddr, memusage);
+  printf("ipaddr:%s, memusage:%s MB (%d)", ipaddr, memusage, imemusage);
   if (port > 0)
   {
     printf(", port: %d", port);

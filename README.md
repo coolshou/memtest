@@ -19,7 +19,7 @@ export PATH=<path to toolchain>/aarch64-linux-musl-cross/bin/:$PATH
 make CROSS_TOOL=aarch64-linux-musl-
 ```
 
-## cross compile mingw x86/x64 (TODO)
+## cross compile mingw x86/x64 (TODO, current not work)
 
 ```
 # x64
@@ -41,7 +41,7 @@ use the client to tell server how many memory (eq: 100M) will consumer
 the memory usage will a little more then specify value
 
 ```
-memtester 127.0.0.1 100
+memtester -c 127.0.0.1 -n 100
 ```
 
 # Docker

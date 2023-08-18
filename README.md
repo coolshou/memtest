@@ -19,15 +19,6 @@ export PATH=<path to toolchain>/aarch64-linux-musl-cross/bin/:$PATH
 make CROSS_TOOL=aarch64-linux-musl-
 ```
 
-## cross compile mingw x86/x64 (TODO, current not work)
-
-```
-# x64
-make CROSS_TOOL=x86_64-w64-mingw32-
-# x86
-make CROSS_TOOL=i686-w64-mingw32-
-```
-
 # RUN
 
  run server
@@ -36,13 +27,15 @@ make CROSS_TOOL=i686-w64-mingw32-
 memtestd
 ```
 
-use the client to tell server how many memory (eq: 100M) will consumer
+use the client (memtester) to tell server how many memory (eq: 100M) will consumer
 
 the memory usage will a little more then specify value
 
 ```
 memtester -c 127.0.0.1 -n 100
 ```
+
+**NOTE: memtester can run under windows WSL**
 
 # Docker
 

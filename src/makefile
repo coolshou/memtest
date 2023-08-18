@@ -1,7 +1,7 @@
 CROSS_TOOLS?=${CROSS_TOOL}
 
 CC=${CROSS_TOOLS}gcc
-C_FLAGS=-Wall -Werror -ansi -pedantic -g -std=c++0x
+C_FLAGS=-Wall -Werror -ansi -pedantic -g -std=c++0x -static
 LIBS=-lstdc++ -lpthread -lm
 
 ifneq (, $(findstring mingw, $(CC)))
@@ -34,11 +34,16 @@ make_socket.o:
 mem.o:
 	$(CC) -o mem.o -c mem.cpp $(C_FLAGS)
 
-clean:
-	rm -f *.o memtestd memtester
+
+distclean: clean
+	rm -f memtestd memtester
 ifneq (, $(findstring mingw, $(CC)))
 	rm -f memtestd.exe memtester.exe
 endif
+
+clean:
+	rm -f *.o 
+
 install:
 	if [ ! -d $(DIST) ]; then \
 		mkdir -p $(DIST); \

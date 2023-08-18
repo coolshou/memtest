@@ -56,7 +56,11 @@ int memeat(int memusage, int iwait, int delay)
 		if (eat_kilobyte())
 		{
 #if defined _WIN32
-			printf("Failed to allocate more memory! Stucked at %lli kb :(\n", eaten_memory);
+#ifdef __MINGW64__
+			printf("Failed to allocate more memory! Stucked at %lli kb :(\n", eaten_memory); // x86_64-w64-mingw32-
+#else
+			printf("Failed to allocate more memory! Stucked at %i kb :(\n", eaten_memory); // i686-w64-mingw32-
+#endif
 #else
 			printf("Failed to allocate more memory! Stucked at %li kb :(\n", eaten_memory);
 #endif
@@ -65,7 +69,11 @@ int memeat(int memusage, int iwait, int delay)
 		if (megabyte++ >= 1024)
 		{
 #if defined _WIN32
-			printf("Eaten %lld / %d MB of ram\n", eaten_memory / (size_t)1024, memusage);
+#ifdef __MINGW64__
+			printf("Eaten %lld / %d MB of ram\n", eaten_memory / (size_t)1024, memusage); // x86_64-w64-mingw32-
+#else
+			printf("Eaten %d / %d MB of ram\n", eaten_memory / (size_t)1024, memusage);	   // i686-w64-mingw32-
+#endif
 #else
 			printf("Eaten %ld / %d MB of ram\n", eaten_memory / (size_t)1024, memusage);
 #endif

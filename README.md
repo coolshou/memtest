@@ -19,6 +19,14 @@ export PATH=<path to toolchain>/aarch64-linux-musl-cross/bin/:$PATH
 make CROSS_TOOL=aarch64-linux-musl-
 ```
 
+# for cross compile windows x86 binary
+
+`make CROSS_TOOL=i686-w64-mingw32-`
+
+# for cross compile windows x64 binary
+
+`make CROSS_TOOL=x86_64-w64-mingw32-`
+
 # RUN
 
  run server

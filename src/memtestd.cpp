@@ -76,7 +76,11 @@ int main(void)
   int sock;
 #endif
   fd_set active_fd_set, read_fd_set;
+#if defined _WIN32
+  unsigned int i;
+#else
   int i;
+#endif
   struct sockaddr_in clientname;
   /*size_t size;*/
   socklen_t size;
